@@ -19,13 +19,15 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 	file, _, err := r.FormFile("plat_motor")
 	if err != nil {
+		http.Error(w, err.Error(), 422)
 		return
 	}
 	defer file.Close()
 
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), 422)
+		return
 	}
 
 	t := &rekognition.DetectTextInput{
@@ -53,12 +55,14 @@ func uploadWajah(w http.ResponseWriter, r *http.Request) {
 
 	uploadIn, _, err := r.FormFile("muka_masuk")
 	if err != nil {
+		http.Error(w, err.Error(), 422)
 		return
 	}
 	defer uploadIn.Close()
 
 	uploadOut, _, err := r.FormFile("muka_keluar")
 	if err != nil {
+		http.Error(w, err.Error(), 422)
 		return
 	}
 	defer uploadOut.Close()
@@ -66,10 +70,14 @@ func uploadWajah(w http.ResponseWriter, r *http.Request) {
 	bufferIn, err := ioutil.ReadAll(uploadIn)
 	if err != nil {
 		fmt.Println(err)
+		http.Error(w, err.Error(), 422)
+		return
 	}
 	bufferOut, err := ioutil.ReadAll(uploadOut)
 	if err != nil {
 		fmt.Println(err)
+		http.Error(w, err.Error(), 422)
+		return
 	}
 
 	muka := rekognition.CompareFacesInput{
@@ -83,12 +91,16 @@ func uploadWajah(w http.ResponseWriter, r *http.Request) {
 	res, err := svc.CompareFaces(&muka)
 	if err != nil {
 		fmt.Println(err)
+		http.Error(w, err.Error(), 422)
+		return
 	}
 
-	switch akurasi := *(res.FaceMatches[0].Similarity); {
-	case (akurasi > 55.0) && (akurasi < 100.0):
-		w.Write([]byte("Sama"))
-	default:
-		w.Write([]byte("Tidak sama"))
+	if res != nil {
+		switch akurasi := *(res.FaceMatches[0].Similarity); {
+		case (akurasi > 55.0) && (akurasi < 100.0):
+			w.Write([]byte("Sama"))
+		default:
+			w.Write([]byte("Tidak sama"))
+		}
 	}
 }
