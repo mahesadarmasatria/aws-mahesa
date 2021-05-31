@@ -97,7 +97,7 @@ func uploadWajah(w http.ResponseWriter, r *http.Request) {
 
 	if res != nil {
 		switch akurasi := *(res.FaceMatches[0].Similarity); {
-		case (akurasi > 55.0) && (akurasi < 100.0):
+		case (akurasi > 85.0) && (akurasi < 100.0):
 			w.Write([]byte("Sama"))
 		default:
 			w.Write([]byte("Tidak sama"))
